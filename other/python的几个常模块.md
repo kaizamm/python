@@ -7,6 +7,7 @@ date: 2017.7.26
 操作系统相关
 + os.path
 + os.name
++ os.popen
 + os.curdir
 + os.pardir
 + os.environ
