@@ -5,9 +5,9 @@ date: 2017.7.26
 
 ### os
 操作系统相关
-+ os.path
++ os.path  os.path.isdir
 + os.name
-+ os.popen
++ os.popen  该方法不但执行命令还返回执行后的信息对象
 + os.curdir
 + os.pardir
 + os.environ
@@ -15,6 +15,9 @@ date: 2017.7.26
 + os.getcwd() 得到当前目录
 + os.getgid/os.getuid/os.getlogin
 + os.system(cmd)  运行cmd命令
++ os.listdir() 列出目录下的文件
++ os.makedirs() 若不存在这个目录则创建,递归
++ os.mkdir()  只创建一层
 
 ### sys
 系统相关
@@ -72,3 +75,4 @@ print r.text
 #### OPTIONS
 
 ### socket
+### time
