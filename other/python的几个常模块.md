@@ -76,3 +76,6 @@ print r.text
 
 ### socket
 ### time
+```
+cur_time = time.strftime('%Y-%m-%d-%H:%M',time.localtime(time.time()))
+```
