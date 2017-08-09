@@ -79,3 +79,102 @@ print r.text
 ```
 cur_time = time.strftime('%Y-%m-%d-%H:%M',time.localtime(time.time()))
 ```
+### json
+python有许多内置或第三方模块可以将JSON字符转换成python字典对象。如下，使用json模块及及其loads函数逐行加载已经下载好的数据文件，json.loads即可将JSON字符转换成Python形式；json.dumps则将Python对象转换为JSON格式：
+```
+import json
+path = '/tmp/test.txt'
+records = [json.loads(line) for line in open(path)]
+```
+### urllib2
+```
+from urllib2 import urlopen
+```
+### python内置字符串方法
++ count 返回字符串中出现次数(非重叠)
++ endswith、startswith 如果字符串以某个后缀结尾(以某个前缀开关)，则返回True
++ join 将字符串用作连接其他字符序列的分隔符
++ index 如果在字符串中找到子串，则返回子串第一个字符所在的位置。如果没有找到，则引发ValueError。
++ find 如果在字符串中找到子串，则返回第一个发现的子串中的第一个字符所在的位置。如果没有找到，则返回-1
++ rfind 如果在字符串中找到子串，则返回最后一个发现的子串的第一个字符所在的位置。如果没有找到，则返回-1
++ replace 用另一个字符串替换指定子串
++ strip、rstrip、lstrip 去除空白符(包括换行符)。相当于对各个元素执行x.strip()(以及rstrip、lstrip)。
++ split 通过指定的分隔符将字符串拆分为一组子串
++ lower、upper 分别将字母字符转换为小写或大写
++ ljust、rjust 用空格(或其他字符)填充字符串的空白侧以返回符合最低宽度字符串
+
+### re
+re模块的函数可以分为三个大类：模式匹配、替换以及拆分。当然，它们之间是相辅相成的。一个regex描述了需要在文本中定位一个模式，它可以用于许多目的。如下例子：拆分一个字符串，分隔符为数量不定的一组空白符(制表符，空格，换行符等)。描述一个或多个空白 符的regex是\s+:
+```
+In [42]: import re
+In [43]: text = "foo bar\t baz \tqux"
+In [44]: re.split('\s+',text)
+Out[44]: ['foo', 'bar', 'baz', 'qux']
+```
+调用re.split('\s+',text)时，正则表达式会先被编译，然后再在text上调用其split方法。你可以用re.compile自己编译regex以得到一个可重用的regex对象:
+```
+In [50]: regex = re.compile('\s+')
+In [51]: regex.split(text)
+Out[51]: ['foo', 'bar', 'baz', 'qux']
+```
+如果只希望得到匹配regex的所有模式，则可以使用findall方法：
+```
+In [52]: regex.findall(text)
+Out[52]: [' ', '\t ', ' \t']
+```
+> 注意：如果想避免正则表达式中不需要的转义(\)，则可以使用原始字符串字面量如r'C:\x'(也可以编写其等价式'C:\\x')。
+如果打算对许多字符串用同一条正则表达式，强烈建议通过re.compile创建regex对象。这样可以节省大量的CPU时间。match和search跟findall功能类似。findall返回的是字符串中所有的匹配项，而search则只返回第一个匹配项。match更加严格，它只匹配字符串的首首部。如下例子：
+```
+In [53]: text = """Kaiz kaiz@quarkfinance.com
+   ....: zkai zkai@google.com
+   ....: Rob rob@gmail.com
+   ....: Ryan ryan@yahoo.com
+   ....: """
+In [54]: pattern = r'[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}'
+#re.IGNORECASE的作用是对大小写不敏感，对于regex,匹配对象只能告诉我们模式在原字符串中的起始和结束位置
+In [57]: regex = re.compile(pattern,flags=re.IGNORECASE)
+#findall返回是一个列表
+In [58]: regex.findall(text)
+Out[58]: ['kaiz@quarkfinance.com', 'zkai@google.com', 'rob@gmail.com', 'ryan@yahoo.com']
+```
+search返回的是文本中的第一个电子邮件地址(以特殊的匹配项对象形式返回)
+```
+In [74]: m = regex.search(text)
+In [75]: m
+Out[75]: <_sre.SRE_Match at 0x20e2a58>
+In [81]: m.group()
+Out[81]: 'kaiz@quarkfinance.com'
+In [83]: text[m.start():m.end()]
+Out[83]: 'kaiz@quarkfinance.com'
+```
+regex.match则将返回None，因为它只匹配出现在字符串开头的模式：
+```
+In [84]: m = regex.match(text)
+In [89]: print m
+None
+```
+另外还有一个sub方法，它会将匹配到的模式替换为指定字符串，并返回所得到的新字符串：
+```
+In [90]: print regex.sub('REDACTED',text)
+Kaiz REDACTED
+zkai REDACTED
+Rob REDACTED
+Ryan REDACTED
+```
+假设你不仅想要找出电子邮件地址，还想将各个地址分成3个部分：用户名、域名以及域后缀。要实现此功能，只需将分段的模式的各部分用圆括号包起来即可：
+```
+In [103]: regex =  re.compile(r'([A-Z0-9._%+-]+)@([a-z0-9.-]+)\.([A-Z]{2,4})', re.IGNORECASE)
+In [104]: m = regex.match('kaiz@quarkfinance.com')
+#由这种正则表达式所产生的匹配对象，可以通过其groups方法一个由模式各段组成的元组：
+In [105]: m.groups()
+Out[105]: ('kaiz', 'quarkfinance', 'com')
+```
+findall则不需要groups()方法，可直接返回一个元组列表：
+```
+In [106]: regex.findall(text)
+Out[106]:
+[('kaiz', 'quarkfinance', 'com'),
+ ('zkai', 'google', 'com'),
+ ('rob', 'gmail', 'com'),
+ ('ryan', 'yahoo', 'com')]
+```
