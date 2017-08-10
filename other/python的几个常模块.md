@@ -29,6 +29,53 @@ date: 2017.7.26
 + sys.exit(exit_code) 退出程序
 + sys.modules 是一个dictionary，表示系统中所有可用的modules  
 
+### subprocess
+subprocess包主要是执行外部命令和程序
+#### subprocess.call()
+父进程等待子进程完成，返回退出信息returncode
+```
+import subprocess
+rc = subprocess.call("ls -l",shell=True)
+```
+shell=True表示这个命令只能通过shell来运行
+#### subprocess.Popen()
+```
+import subprocess
+child = subprocess.Popen(["ping","-c","5","www.baidu.com"])
+print("parent process")
+```
+从运行结果看，父进程在开启子进程之后并没有等待child的完成，而是直接运行print
+```
+import subprocess
+child = subprocess.Popen(["ping","-c","5","www.baidu.com"])
+child.wait() #加上这句则需等待子进程执行完成，再执行下面语句
+print("parent process")
+```
+##### 子进程的文本的控制
+```
+import subprocess
+child1 = subprocess.Popen(["ls","-l"],stdout=subprocess.PIPE)
+#subprocess.PIPE实际为文本流提供一个缓存区，child1的stdout将文本输出到缓存区，随后child2的stdin从该PIPE中将文本取走
+child2 = subprocess.Popen(["wc"],stdin=child1.stdout,stdout=subprocess.PIPE)
+out = child2.communicate()
+#communicate()是Popen对象的一个方法，该方法会阻塞父进程，直到子进程完成
+print(out)
+```
+我们还可以利用communicate()方法来使用PIPE给子进程输入:
+```
+import subprocess
+child = subprocess.Popen(["cat"], stdin=subprocess.PIPE)
+child.communicate("vamei")
+```
+
+#### 另可以在父进程中对子进程操作，例如上面的child对象
++ child.poll() #检查子进程状态
++ child.kill() #终止子进程
++ child.send_signal() #向子进程发送信号
++ child.terminate() #终止子进程
+子进程的PID存储在child.pid
+
+
 ### requests
 第三方库,安装 pip insstall requests
 参考官网http://python-requests.org
