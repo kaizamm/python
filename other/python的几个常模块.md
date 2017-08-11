@@ -29,6 +29,7 @@ date: 2017.7.26
 + sys.exit(exit_code) 退出程序
 + sys.modules 是一个dictionary，表示系统中所有可用的modules  
 
+### MySQLdb
 ### subprocess
 subprocess包主要是执行外部命令和程序
 #### subprocess.call()
