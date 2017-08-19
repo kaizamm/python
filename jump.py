@@ -36,7 +36,7 @@ def get_info():
   while i < 3:
     i +=1
     try:
-      input_index_ = input("\033[1;32;40mPlease_Choose_Index_Above:\033[0m")
+      input_index_ = input("\033[1;32;40mPlease_Choose_Index_Above_To_Login_To_The_IP_Host:\033[0m")
     except NameError,e:
       print "\033[1;31;40m[Info]Wrong Index,%s Times Chance Left,Again...\033[0m" % (3-i)
       continue
@@ -61,6 +61,7 @@ def login(ip):
   import getpass,paramiko,interactive
 #  paramiko.util.log_to_file('/tmp/login.log')
   user = getpass.getuser()
+  if user == "root": sys.exit("\033[1;31;40m[Erorr]Please Use Your Ldap To Login Nor Root \033[0m")
   print '****'+"\033[1;31;40mHi,%s,Welcome Login To \033[0m" % user  + "\033[1;33;40m%s\033[0m"  % ip + '****'
   ssh = paramiko.SSHClient()
   ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
