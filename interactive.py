@@ -1,58 +1,101 @@
+# Copyright (C) 2003-2007  Robey Pointer <robeypointer@gmail.com>
+# _*_coding:UTF-8_*_
+
+#
+# This file is part of paramiko.
+#
+# Paramiko is free software; you can redistribute it and/or modify it under the
+# terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation; either version 2.1 of the License, or (at your option)
+# any later version.
+#
+# Paramiko is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
+# details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with Paramiko; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 import socket
 import sys
+from paramiko.py3compat import u
+
 # windows does not have termios...
 try:
     import termios
     import tty
+    import fcntl
+    import os
     has_termios = True
 except ImportError:
     has_termios = False
+
+
 def interactive_shell(chan):
     if has_termios:
         posix_shell(chan)
     else:
         windows_shell(chan)
+
+
 def posix_shell(chan):
     import select
+    
     oldtty = termios.tcgetattr(sys.stdin)
+    fl = fcntl.fcntl(sys.stdin.fileno(), fcntl.F_GETFL)
+    fcntl.fcntl(sys.stdin.fileno(), fcntl.F_SETFL, fl | os.O_NONBLOCK)
     try:
         tty.setraw(sys.stdin.fileno())
         tty.setcbreak(sys.stdin.fileno())
         chan.settimeout(0.0)
+
         while True:
             r, w, e = select.select([chan, sys.stdin], [], [])
+
             if chan in r:
                 try:
-                    x = chan.recv(1024)
+                    x = u(chan.recv(1024))
                     if len(x) == 0:
-                        print 'rn*** EOFrn',
+                        os.system('clear')
+                        sys.stdout.write('\r\n\033[1;32;40m***回到跳板机***\033[0m\r\n')
+                        chan.close()
                         break
                     sys.stdout.write(x)
                     sys.stdout.flush()
                 except socket.timeout:
                     pass
             if sys.stdin in r:
-                x = sys.stdin.read(1)
+                x = sys.stdin.read(4)
+                #x = sys.stdin.readline()
                 if len(x) == 0:
                     break
                 chan.send(x)
+
     finally:
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, oldtty)
+        fcntl.fcntl(sys.stdin.fileno(), fcntl.F_SETFL, fl)
+
+
 # thanks to Mike Looijmans for this code
 def windows_shell(chan):
     import threading
-    sys.stdout.write("Line-buffered terminal emulation. Press F6 or ^Z to send EOF.rnrn")
+
+    sys.stdout.write("Line-buffered terminal emulation. Press F6 or ^Z to send EOF.\r\n\r\n")
+
     def writeall(sock):
         while True:
             data = sock.recv(256)
             if not data:
-                sys.stdout.write('rn*** EOF ***rnrn')
+                sys.stdout.write('\r\n*** EOF ***\r\n\r\n')
                 sys.stdout.flush()
                 break
             sys.stdout.write(data)
             sys.stdout.flush()
+
     writer = threading.Thread(target=writeall, args=(chan,))
     writer.start()
+
     try:
         while True:
             d = sys.stdin.read(1)
@@ -62,3 +105,5 @@ def windows_shell(chan):
     except EOFError:
         # user hit ^Z or F6
         pass
+
+
