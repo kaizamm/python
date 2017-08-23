@@ -1,6 +1,10 @@
 #!/usr/bin/env
 # _*_coding:UTF-8_*_
-
+'''
+环境： yum -y install python-devel libxslt-devel libffi-devel openssl-devel
+安装pip工具： wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py
+安装paramiko: pip install paramiko
+'''
 __Author__ = "kaiz"
 
 import os,sys,re,requests
