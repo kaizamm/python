@@ -1,10 +1,6 @@
 #!/usr/bin/env
 # _*_coding:UTF-8_*_
-'''
-环境： yum -y install python-devel libxslt-devel libffi-devel openssl-devel
-安装pip工具： wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py
-安装paramiko: pip install paramiko
-'''
+
 __Author__ = "kaiz"
 
 import os,sys,re,requests
@@ -104,8 +100,9 @@ def login(ip):
     sys.exit('\033[1;31;40m[Error]Wrong Passwd 3 Times,Exit!\033[0m')
   os.system('clear')
   print '\033[1;32;40m*** Hi,%s, 欢迎登陆至 %s 若要退出至跳板机请直接按 Ctrl + D ***\033[0m' % (user,ip)
-  channel = ssh.invoke_shell(term='vt100',width=80,height=50,width_pixels=0,height_pixels=0)
-  #channel = ssh.invoke_shell()
+  #channel = ssh.invoke_shell(term='vt100',width=80,height=50,width_pixels=0,height_pixels=0)
+  channel = ssh.invoke_shell(term='xterm',width=196)
+  #channel = ssh.invoke_shell(term = 'xterm+256color')
   interactive.interactive_shell(channel)
   #关闭连接
   channel.close()
